@@ -62,12 +62,12 @@
         BasemapToggle,
         watchUtils
       ) {
-        let fieldSelect, classSelect, numClassesInput, slider;
+        let fieldSelect, classSelect, numClassesInput, slider, layerChoice;
 
         const layer = new FeatureLayer({
           title: "Utah Wetlands",
           url:
-            "https://webmaps.geology.utah.gov/arcgis/rest/services/Wetlands/Wetland_Landscape_Data/MapServer/0",
+            "https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/VisualizePropertiesHUCs/FeatureServer",
           popupTemplate: {
             // autocast as esri/PopupTemplate
             title: "Poop",
@@ -77,7 +77,7 @@
                 fieldInfos: [
                   {
                     fieldName: "utah_percent",
-                    label: "Arear in Utah (%)",
+                    label: "Area in Utah (%)",
                     format: {
                       digitSeparator: true,
                       places: 0
@@ -121,6 +121,12 @@
           },
         });
 
+        const layerTest = new FeatureLayer({
+          title: "Percent Mapped in Utah",
+          url: "https://services.arcgis.com/ZzrwjTRez6FJiOq4/ArcGIS/rest/services/VisualizePropertiesHUCs/FeatureServer/0",
+          //visible: false
+        })
+
         const map = new Map({
           basemap: "gray-vector"
         });
@@ -155,14 +161,12 @@
           fieldSelect = document.getElementById("field-select");
           fieldSelect.addEventListener("calciteDropdownSelect", generateRenderer);
 
-          classSelect = document.getElementById("class-select");
-          classSelect.addEventListener("change", generateRenderer);
-
-          numClassesInput = document.getElementById("num-classes");
-          numClassesInput.addEventListener("change", generateRenderer);
 
           watchUtils.whenFalseOnce(view, "updating", generateRenderer);
         });
+        //map.add(layerTest);
+
+        //console.log(layerTest);
 
         // Generate rounded arcade expression when user
         // selects a field name
@@ -174,92 +178,215 @@
         function generateRenderer() {
           const fieldLabel =
             fieldSelect.selectedItems[0].innerText;
-          const fieldValue =
+          fieldValue =
             fieldSelect.selectedItems[0].id;
           
           console.info("change: ", fieldLabel)
           console.info("value: ", fieldValue)
-          
-          // default to natural-breaks when manual is selected for classification method
-          const classificationMethod =
-            classSelect.value === "manual"
-              ? "natural-breaks"
-              : classSelect.value;
 
-          const params = {
-            layer: layer,
-            valueExpression: getValueExpression(fieldValue),
-            view: view,
-            classificationMethod: classificationMethod,
-            numClasses: parseInt(numClassesInput.value),
-            legendOptions: {
-              title: "% population with " + fieldLabel
-            }
-          };
+          if (map.layers.includes(layerChoice)) {
+          map.remove(layerChoice);
+          }
+          destroySlider();
+
+          if (fieldValue == "utah_percent") {
+            layerChoice = new FeatureLayer({
+              url: "https://services.arcgis.com/ZzrwjTRez6FJiOq4/ArcGIS/rest/services/VisualizePropertiesHUCs/FeatureServer/0",
+              title: "Area in Utah (%)",
+            });
+
+          } else if (fieldValue == "outdated_mapping_percent") {
+            layerChoice = new FeatureLayer({
+              url: "https://services.arcgis.com/ZzrwjTRez6FJiOq4/ArcGIS/rest/services/VisualizePropertiesHUCs/FeatureServer/1",
+              title: "Outdated Wetland Mapping (%)",
+          });
+          } else if (fieldValue == "hr2000s_mapping_percent") {
+            layerChoice = new FeatureLayer({
+              url: "https://services.arcgis.com/ZzrwjTRez6FJiOq4/ArcGIS/rest/services/VisualizePropertiesHUCs/FeatureServer/2",
+              title: "Wetland Mapping 2000-2009 (%)",
+          });
+          } else if (fieldValue == "hr2010s_mapping_percent") {
+            layerChoice = new FeatureLayer({
+              url: "https://services.arcgis.com/ZzrwjTRez6FJiOq4/ArcGIS/rest/services/VisualizePropertiesHUCs/FeatureServer/3",
+              title: "Wetland Mapping 2010-2019 (%)",
+          });
+          } else if (fieldValue == "riverine_count") {
+            layerChoice = new FeatureLayer({
+              url: "https://services.arcgis.com/ZzrwjTRez6FJiOq4/ArcGIS/rest/services/VisualizePropertiesHUCs/FeatureServer/4",
+              title: "Rivers, Channels, and Bars (#)",
+          });
+          }
+
+
+          
+
+          map.add(layerChoice);
+          
+
+    //       const params = {
+    //         layer: layerChoice,
+    //         field: fieldValue,
+    //         //valueExpression: getValueExpression(fieldValue),
+    //         view: view,
+    //         // classificationMethod: classificationMethod,
+    //         // numClasses: parseInt(numClassesInput.value),
+    //         classificationMethod: "esriClassifyManual",
+
+    // classBreakInfos: [
+    //   {
+    //     symbol: {
+    //       type: "esriSFS",
+    //       style: "esriSFSSolid",
+    //       color: [
+    //         102,
+    //         37,
+    //         6,
+    //         255
+    //       ],
+    //       outline: {
+    //         type: "esriSLS",
+    //         style: "esriSLSSolid",
+    //         color: [
+    //           110,
+    //           110,
+    //           110,
+    //           255
+    //         ],
+    //         width: 0.7
+    //       }
+    //     },
+    //     minValue: 0,
+    //     maxValue: 0,
+    //     label: "0"
+    //   },
+    //   {
+    //     symbol: {
+    //       type: "esriSFS",
+    //       style: "esriSFSSolid",
+    //       color: [
+    //         204,
+    //         76,
+    //         2,
+    //         255
+    //       ],
+    //       outline: {
+    //         type: "esriSLS",
+    //         style: "esriSLSSolid",
+    //         color: [
+    //           110,
+    //           110,
+    //           110,
+    //           255
+    //         ],
+    //         width: 0.7
+    //       }
+    //     },
+    //     minValue: 0.1,
+    //     maxValue: 25,
+    //     label: ">0-25"
+    //   },
+    //   {
+    //     symbol: {
+    //       type: "esriSFS",
+    //       style: "esriSFSSolid",
+    //       color: [
+    //         254,
+    //         153,
+    //         41,
+    //         255
+    //       ],
+    //       outline: {
+    //         type: "esriSLS",
+    //         style: "esriSLSSolid",
+    //         color: [
+    //           110,
+    //           110,
+    //           110,
+    //           255
+    //         ],
+    //       width: 0.7
+    //       }
+    //     },
+    //     minValue: 25.1,
+    //     maxValue: 50,
+    //     label: ">25-50"
+    //   },
+    //   {
+    //     symbol: {
+    //       type: "esriSFS",
+    //       style: "esriSFSSolid",
+    //       color: [
+    //         254,
+    //         227,
+    //         145,
+    //         255
+    //       ],
+    //       outline: {
+    //         type: "esriSLS",
+    //         style: "esriSLSSolid",
+    //         color: [
+    //           110,
+    //           110,
+    //           110,
+    //           255
+    //         ],
+    //         width: 0.7
+    //       }
+    //     },
+    //     minValue: 50.1,
+    //     maxValue: 75,
+    //     label: ">50-75"
+    //   },
+    //   {
+    //     symbol: {
+    //       type: "esriSFS",
+    //       style: "esriSFSSolid",
+    //       color: [
+    //         255,
+    //         255,
+    //         229,
+    //         255
+    //       ],
+    //       outline: {
+    //         type: "esriSLS",
+    //         style: "esriSLSSolid",
+    //         color: [
+    //           110,
+    //           110,
+    //           110,
+    //           255
+    //         ],
+    //         width: 0.7
+    //       }
+    //     },
+    //     minValue: 75.1,
+    //     maxValue: 100,
+    //     label: ">75-100"
+    //   }
+    // ],
+    //         legendOptions: {
+    //           title: "Poop",
+    //           order: "ascendingValues"
+    //         }
+    //       };
 
           // generate the renderer and set it on the layer
-          colorRendererCreator
-            .createClassBreaksRenderer(params)
-            .then(function (rendererResponse) {
-              layer.renderer = rendererResponse.renderer;
+          // colorRendererCreator
+          //   .createClassBreaksRenderer(params)
+          //   .then(function (rendererResponse) {
+          //     console.log(rendererResponse.renderer);
+          //     console.log(layerChoice.renderer);
+          //     layerChoice.renderer = rendererResponse.renderer;
+          //     console.log(layerChoice.renderer);
 
-              if (!map.layers.includes(layer)) {
-                map.add(layer);
-              }
-
-              if (classSelect.value === "manual") {
-                // if manual is selected, then add or update
-                // a classed color slider to allow the user to
-                // construct manual class breaks
-                updateColorSlider(rendererResponse);
-              } else {
-                destroySlider();
-              }
-            });
+          //     if (!map.layers.includes(layerChoice)) {
+          //       map.add(layerChoice);
+          //     }
+          //       destroySlider();
+          //   });
         }
 
-        // If manual classification method is selected, then create
-        // a classed color slider to allow user to manually modify
-        // the class breaks starting with the generated renderer
 
-        function updateColorSlider(rendererResult) {
-          histogram({
-            layer: layer,
-            valueExpression: getValueExpression(fieldValue),
-            view: view,
-            numBins: 100
-          }).then(function (histogramResult) {
-            if (!slider) {
-              const sliderContainer = document.createElement("div");
-              const container = document.createElement("div");
-              container.id = "containerDiv";
-              container.appendChild(sliderContainer);
-              view.ui.add(container, "top-right");
-
-              slider = ClassedColorSlider.fromRendererResult(
-                rendererResult,
-                histogramResult
-              );
-              slider.container = container;
-              slider.viewModel.precision = 1;
-
-              function changeEventHandler() {
-                const renderer = layer.renderer.clone();
-                renderer.classBreakInfos = slider.updateClassBreakInfos(
-                  renderer.classBreakInfos
-                );
-                layer.renderer = renderer;
-              }
-
-              slider.on(
-                ["thumb-change", "thumb-drag", "min-change", "max-change"],
-                changeEventHandler
-              );
-            } else {
-              slider.updateFromRendererResult(rendererResult, histogramResult);
-            }
-          });
-        }
 
         function destroySlider() {
           if (slider) {
@@ -280,30 +407,15 @@
       <calcite-dropdown id="field-select">
         <calcite-button slot="dropdown-trigger">Select Field</calcite-button>
         <calcite-dropdown-group id="group-1" selection-mode="single">
-          <calcite-dropdown-item id="utah_percent">Mapped in Utah %</calcite-dropdown-item>
-          <calcite-dropdown-item id="outdated_mapping_percent" active>Outdated Mapping %</calcite-dropdown-item>
+          <calcite-dropdown-item id="utah_percent" active>Mapped in Utah %</calcite-dropdown-item>
+          <calcite-dropdown-item id="outdated_mapping_percent">Outdated Mapping %</calcite-dropdown-item>
           <calcite-dropdown-item id="hr2000s_mapping_percent">2000s Mapping %</calcite-dropdown-item>
           <calcite-dropdown-item id="hr2010s_mapping_percent">2010s Mapping %</calcite-dropdown-item>
           <calcite-dropdown-item id="riverine_count">Riverine Count</calcite-dropdown-item>
         </calcite-dropdown-group>
       </calcite-dropdown>
 
-      Classification:
-      <select id="class-select" class="esri-widget">
-        <option value="equal-interval" selected>Equal interval</option>
-        <option value="quantile">Quantile</option>
-        <option value="natural-breaks">Natual Breaks</option>
-        <option value="manual">Manual</option>
-      </select>
-      Breaks:
-      <input
-        type="number"
-        id="num-classes"
-        class="esri-widget"
-        value="5"
-        min="2"
-        max="10"
-      />
+
     </div>
   </body>
 </html>
