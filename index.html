@@ -62,7 +62,7 @@
         BasemapToggle,
         watchUtils
       ) {
-        let fieldSelect, classSelect, numClassesInput, slider;
+        let layerSelect, fieldSelect, classSelect, numClassesInput, slider;
 
         const layer = new FeatureLayer({
           title: "Utah Wetlands",
@@ -70,7 +70,7 @@
             "https://webmaps.geology.utah.gov/arcgis/rest/services/Wetlands/Wetland_Landscape_Data/MapServer/0",
           popupTemplate: {
             // autocast as esri/PopupTemplate
-            title: "Poop",
+            title: "HUC12",
             content: [
               {
                 type: "fields",
@@ -152,6 +152,10 @@
 
         // Generate a new renderer each time the user changes an input parameter
         view.when().then(function () {
+
+          layerSelect = document.getElementById("layer-select");
+          layerSelect.addEventListener("calciteDropdownSelect", generateRenderer);
+
           fieldSelect = document.getElementById("field-select");
           fieldSelect.addEventListener("calciteDropdownSelect", generateRenderer);
 
@@ -172,11 +176,21 @@
         }
 
         function generateRenderer() {
+          console.log(fieldSelect);
+          console.log(layerSelect);
+          const layerLabel = 
+            layerSelect.selectedItems[0].innerText;
+          const layerValue = 
+            layerSelect.selectedItems[0].id;
+          //grab values from element for field choice
           const fieldLabel =
             fieldSelect.selectedItems[0].innerText;
           const fieldValue =
             fieldSelect.selectedItems[0].id;
-          
+
+          console.info("change: ", layerLabel)
+          console.info("value: ", layerValue)
+
           console.info("change: ", fieldLabel)
           console.info("value: ", fieldValue)
           
@@ -188,12 +202,13 @@
 
           const params = {
             layer: layer,
-            valueExpression: getValueExpression(fieldValue),
+            //valueExpression: getValueExpression(fieldValue),
+            field: fieldValue,
             view: view,
             classificationMethod: classificationMethod,
             numClasses: parseInt(numClassesInput.value),
             legendOptions: {
-              title: "% population with " + fieldLabel
+              title: fieldLabel
             }
           };
 
@@ -223,9 +238,12 @@
         // the class breaks starting with the generated renderer
 
         function updateColorSlider(rendererResult) {
+          const fieldValue =
+            fieldSelect.selectedItems[0].id;
           histogram({
             layer: layer,
-            valueExpression: getValueExpression(fieldValue),
+            //valueExpression: getValueExpression(fieldValue),
+            field: fieldValue,
             view: view,
             numBins: 100
           }).then(function (histogramResult) {
@@ -277,14 +295,26 @@
   <body>
     <div id="viewDiv"></div>
     <div id="infoDiv" class="esri-widget">
+
+      <calcite-dropdown id="layer-select">
+        <calcite-button slot="dropdown-trigger">Select Layer</calcite-button>
+        <calcite-dropdown-group id="group-2" selection-mode="single">
+          <calcite-dropdown-item id="huc12" active>HUC12</calcite-dropdown-item>
+          <calcite-dropdown-item id="huc12eco">HUC12 by Ecoregion</calcite-dropdown-item>
+          <calcite-dropdown-item id="huc8">HUC8</calcite-dropdown-item>
+          <calcite-dropdown-item id="huc8eco">HUC8 by Ecoregion</calcite-dropdown-item>
+          <calcite-dropdown-item id="ecoregion">Ecoregion</calcite-dropdown-item>
+        </calcite-dropdown-group>
+      </calcite-dropdown>
+
       <calcite-dropdown id="field-select">
         <calcite-button slot="dropdown-trigger">Select Field</calcite-button>
         <calcite-dropdown-group id="group-1" selection-mode="single">
-          <calcite-dropdown-item id="utah_percent">Mapped in Utah %</calcite-dropdown-item>
-          <calcite-dropdown-item id="outdated_mapping_percent" active>Outdated Mapping %</calcite-dropdown-item>
-          <calcite-dropdown-item id="hr2000s_mapping_percent">2000s Mapping %</calcite-dropdown-item>
-          <calcite-dropdown-item id="hr2010s_mapping_percent">2010s Mapping %</calcite-dropdown-item>
-          <calcite-dropdown-item id="riverine_count">Riverine Count</calcite-dropdown-item>
+          <calcite-dropdown-item id="utah_percent" active>Area in Utah (%)</calcite-dropdown-item>
+          <calcite-dropdown-item id="outdated_mapping_percent">Outdated Wetland Mapping (%)</calcite-dropdown-item>
+          <calcite-dropdown-item id="hr2000s_mapping_percent">Wetland Mapping 2000-2009 (%)</calcite-dropdown-item>
+          <calcite-dropdown-item id="hr2010s_mapping_percent">Wetland Mapping 2010-2019 (%)</calcite-dropdown-item>
+          <calcite-dropdown-item id="riverine_count">Rivers, Channels, and Bars (#)</calcite-dropdown-item>
         </calcite-dropdown-group>
       </calcite-dropdown>
 
