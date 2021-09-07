@@ -35,7 +35,7 @@
         width: 100%;
       }
 
-      #infoDiv {
+      #fieldDiv {
         padding: 8px;
       }
     </style>
@@ -148,7 +148,7 @@
         view.ui.add(basemapToggle, "bottom-right");
         basemapToggle.on("toggle", generateRenderer);
 
-        view.ui.add("infoDiv", "top-right");
+        view.ui.add("fieldDiv", "top-right");
 
         // Generate a new renderer each time the user changes an input parameter
         view.when().then(function () {
@@ -172,7 +172,8 @@
         // selects a field name
         function getValueExpression(field) {
           console.log(field);
-          return "Round( ( $feature." + field + " / 100 ) * 100, 1)";
+          return "$feature." + field;
+          //return "Round( ( $feature." + field + " / 100 ) * 100, 1)";
         }
 
         function generateRenderer() {
@@ -238,15 +239,17 @@
         // the class breaks starting with the generated renderer
 
         function updateColorSlider(rendererResult) {
+          console.log("Custom");
           const fieldValue =
             fieldSelect.selectedItems[0].id;
           histogram({
             layer: layer,
-            //valueExpression: getValueExpression(fieldValue),
+            valueExpression: getValueExpression(fieldValue),
             field: fieldValue,
             view: view,
             numBins: 100
           }).then(function (histogramResult) {
+            console.log(histogramResult);
             if (!slider) {
               const sliderContainer = document.createElement("div");
               const container = document.createElement("div");
@@ -265,7 +268,9 @@
                 const renderer = layer.renderer.clone();
                 renderer.classBreakInfos = slider.updateClassBreakInfos(
                   renderer.classBreakInfos
+                  
                 );
+                console.log(renderer.classBreakInfos);
                 layer.renderer = renderer;
               }
 
@@ -275,6 +280,8 @@
               );
             } else {
               slider.updateFromRendererResult(rendererResult, histogramResult);
+              console.log(rendererResult);
+              console.log(histogramResult);
             }
           });
         }
@@ -294,7 +301,7 @@
 
   <body>
     <div id="viewDiv"></div>
-    <div id="infoDiv" class="esri-widget">
+    <div id="fieldDiv" class="esri-widget">
 
       <calcite-dropdown id="layer-select">
         <calcite-button slot="dropdown-trigger">Select Layer</calcite-button>
