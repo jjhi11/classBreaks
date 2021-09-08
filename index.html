@@ -153,16 +153,13 @@
         // Generate a new renderer each time the user changes an input parameter
         view.when().then(function () {
 
-          layerSelect = document.getElementById("layer-select");
-          layerSelect.addEventListener("calciteDropdownSelect", generateRenderer);
-
           fieldSelect = document.getElementById("field-select");
           fieldSelect.addEventListener("calciteDropdownSelect", generateRenderer);
 
-          classSelect = document.getElementById("class-select");
-          classSelect.addEventListener("change", generateRenderer);
+          classSelect = document.getElementById("classification-select");
+          classSelect.addEventListener("calciteDropdownSelect", generateRenderer);
 
-          numClassesInput = document.getElementById("num-classes");
+          numClassesInput = document.getElementById("modifier-class");
           numClassesInput.addEventListener("change", generateRenderer);
 
           watchUtils.whenFalseOnce(view, "updating", generateRenderer);
@@ -178,11 +175,7 @@
 
         function generateRenderer() {
           console.log(fieldSelect);
-          console.log(layerSelect);
-          const layerLabel = 
-            layerSelect.selectedItems[0].innerText;
-          const layerValue = 
-            layerSelect.selectedItems[0].id;
+
           //grab values from element for field choice
           const fieldLabel =
             fieldSelect.selectedItems[0].innerText;
@@ -207,7 +200,7 @@
             field: fieldValue,
             view: view,
             classificationMethod: classificationMethod,
-            numClasses: parseInt(numClassesInput.value),
+            numClasses: parseInt(numClassesInput.id),
             legendOptions: {
               title: fieldLabel
             }
@@ -303,16 +296,6 @@
     <div id="viewDiv"></div>
     <div id="fieldDiv" class="esri-widget">
 
-      <calcite-dropdown id="layer-select">
-        <calcite-button slot="dropdown-trigger">Select Layer</calcite-button>
-        <calcite-dropdown-group id="group-2" selection-mode="single">
-          <calcite-dropdown-item id="huc12" active>HUC12</calcite-dropdown-item>
-          <calcite-dropdown-item id="huc12eco">HUC12 by Ecoregion</calcite-dropdown-item>
-          <calcite-dropdown-item id="huc8">HUC8</calcite-dropdown-item>
-          <calcite-dropdown-item id="huc8eco">HUC8 by Ecoregion</calcite-dropdown-item>
-          <calcite-dropdown-item id="ecoregion">Ecoregion</calcite-dropdown-item>
-        </calcite-dropdown-group>
-      </calcite-dropdown>
 
       <calcite-dropdown id="field-select">
         <calcite-button slot="dropdown-trigger">Select Field</calcite-button>
@@ -372,7 +355,41 @@
         </calcite-dropdown-group>
       </calcite-dropdown>
 
-      Classification:
+      <calcite-dropdown id="classification-select">
+        <calcite-button slot="dropdown-trigger">Classification</calcite-button>
+          <calcite-dropdown-group id="group-3" selection-mode="single">
+            <calcite-dropdown-item id="equal-interval" active>Equal Interval</calcite-dropdown-item>
+            <calcite-dropdown-item id="quantile" >Quantile</calcite-dropdown-item>
+            <calcite-dropdown-item id="natural-breaks" >Natural Breaks</calcite-dropdown-item>
+            <calcite-dropdown-item id="manual" >Manual</calcite-dropdown-item>
+
+      </calcite-dropdown-group>
+    </calcite-dropdown>
+
+    Breaks:
+      <input
+        type="number"
+        id="modifier-class"
+        class="esri-widget"
+        value="5"
+        min="2"
+        max="10"
+      />
+
+    <!-- <calcite-dropdown id="modifier-class">
+      <calcite-button slot="dropdown-trigger">Class Breaks</calcite-button>
+        <calcite-dropdown-group id="group-4" selection-mode="single">
+          <calcite-dropdown-item id="1" active>1</calcite-dropdown-item>
+          <calcite-dropdown-item id="2" >2</calcite-dropdown-item>
+          <calcite-dropdown-item id="3" >3</calcite-dropdown-item>
+          <calcite-dropdown-item id="4" >4</calcite-dropdown-item>
+          <calcite-dropdown-item id="5" >5</calcite-dropdown-item>
+          <calcite-dropdown-item id="6" >6</calcite-dropdown-item>
+
+    </calcite-dropdown-group>
+  </calcite-dropdown> -->
+
+      <!-- Classification:
       <select id="class-select" class="esri-widget">
         <option value="equal-interval" selected>Equal interval</option>
         <option value="quantile">Quantile</option>
@@ -387,7 +404,7 @@
         value="5"
         min="2"
         max="10"
-      />
+      /> -->
     </div>
   </body>
 </html>
